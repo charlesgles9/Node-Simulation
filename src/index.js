@@ -40,6 +40,9 @@ var LineTree={
             this.lines.push(line);
         }
      }
+    },
+    clear(){
+        this.lines.splice(0,this.lines.length);
     }
 }
 
@@ -76,24 +79,14 @@ var lineTree=null;
 var n_time=0;
 var o_time;
 var tick=0;
+const maxParticles=500;
 window.onload=()=>{
    canvas= document.getElementById("canvas");
    ctx=canvas.getContext("2d");
    ctx.canvas.width  = window.innerWidth;
    ctx.canvas.height = window.innerHeight;
-
-   for(let i=0;i<100;i++){
-     const point=Object.create(Point2D);
-     point.x=Math.random()* ctx.canvas.width;
-     point.y=Math.random()* ctx.canvas.height;
-     point.size=5;
-     point.speed=0.5+Math.random()*1.5;
-     point.angle=Math.random()*Math.PI*2;
-     points.push(point);
-   }
-   lineTree= Object.create(LineTree);
-
-   lineTree.createTree(points);
+   
+  initParticleList();
    
 }
 
@@ -102,12 +95,32 @@ window.addEventListener("resize",()=>{
     ctx.canvas.height = window.innerHeight;
 },false)
 
+function initParticleList(){
+    
+        points.splice(0,points.length)
+    const size=maxParticles*(parseFloat(document.getElementById("p1").value)/100.0);
+     
+    for(let i=0;i<size;i++){
+        const point=Object.create(Point2D);
+        point.x=Math.random()* ctx.canvas.width;
+        point.y=Math.random()* ctx.canvas.height;
+        point.size=5;
+        point.speed=0.5+Math.random()*1.5;
+        point.angle=Math.random()*Math.PI*2;
+        points.push(point);
+      }
+      if(lineTree==null)
+      lineTree= Object.create(LineTree);
+       else
+       lineTree.clear();
+      lineTree.createTree(points);
+
+}
 
 function update(){
    
     if(canvas!=null){
     o_time = performance.now();
-    ctx.fillStyle="black";
     ctx.clearRect(0, 0, canvas.width, canvas.height);
 
     //draw lineTree
