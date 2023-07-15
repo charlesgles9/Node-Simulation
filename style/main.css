@@ -51,6 +51,10 @@ canvas{
     flex-direction: row;
 }
 
+.card{
+    box-shadow:2px 2px 2px 2px rgba(255, 255, 255, 0.781);
+    margin: 5px;
+} 
 .white{
     color: white;
 }
