@@ -2,10 +2,18 @@ var Point2D={
      x:0,
      y:0,
      speed:0,
+     acc:0,
      size:0,
      angle:0,
      collided:false,
-     alpha:1
+     alpha:1,
+
+     contains(point){
+        const deltaX = this.x - point.x;
+        const deltaY = this.y - point.y;
+        // circle collision detection
+        return Math.sqrt(Math.pow(deltaX, 2) + Math.pow(deltaY, 2))<(point.size+this.size); 
+     }
 
 }
 
@@ -51,16 +59,54 @@ var LineTree={
 }
 
 function mouseRepelAnimation(point){
-     if(pointer2D.distance()<=pointer2D.max){
+    const mouseRadius=1.0
+     if(pointer2D.distance()<=pointer2D.max*mouseRadius){
         point.angle=-pointer2D.getAngle();
-        movePoint(point,Math.abs(pointer2D.distance()-pointer2D.max))
+        movePoint(point,Math.min(Math.abs(pointer2D.distance()-pointer2D.max),10));
      } else
         movePoint(point,0);
 }
 
+function mouseAttractAnimation(point){
+    if(pointer2D.distance()<=pointer2D.max){
+        point.angle=-pointer2D.getAngle();
+        movePoint(point,-Math.abs(pointer2D.distance()-pointer2D.max)*0.02-point.speed)
+     } else
+        movePoint(point,0);
+}
+
+function mouseGatherAnimation(point){
+    if(pointer2D.distance()<=pointer2D.max){
+        movePoint(point,-point.speed)
+     } else
+        movePoint(point,0);
+}
+
+function mouseFlingPoint(point){
+     const radius=point.size*2;
+     const elasticity=500;
+     if(pointerDown2D.distance()<=radius){
+           pointerDown2D.start.x=point.x;
+           pointerDown2D.start.y=point.y;
+           
+         if(EVENT[2]){
+            point.angle=-pointerUp2D.getAngle();
+
+            point.acc=10*Math.min(pointerUp2D.distance(),elasticity)/elasticity;
+          // point.x=pointer2D.start.x-point.size*0.5;
+          // point.y=pointer2D.start.y-point.size*0.5;
+        //   pointerDown2D.start.x=pointer2D.start.x;
+          // pointerDown2D.start.y=pointer2D.start.y;
+         }
+     }else{
+        movePoint(point,0);
+     }
+}
+
 function movePoint(point,offset){
-    point.x += (point.speed+offset) * Math.cos(point.angle);
-    point.y += (point.speed+offset) * Math.sin(point.angle);
+    point.x += (point.speed+offset+point.acc) * Math.cos(point.angle);
+    point.y += (point.speed+offset+point.acc) * Math.sin(point.angle);
+    point.acc*=0.999;
 }
 
 function applyWave(point){
@@ -68,7 +114,25 @@ function applyWave(point){
     let offset=point.size*4;
     pointer2D.end.x=point.x;
     pointer2D.end.y=point.y;
-    mouseRepelAnimation(point);
+    pointerDown2D.end.x=point.x;
+    pointerDown2D.end.y=point.y;
+    pointerUp2D.end.x=point.x;
+    pointerUp2D.end.y=point.y;
+    switch(MODE){
+     case 0:
+        mouseRepelAnimation(point);
+        break;
+     case 1:
+        mouseAttractAnimation(point);
+        break;
+     case 2:
+        mouseGatherAnimation(point);
+        break;
+     case 3:
+        mouseFlingPoint(point);
+        break;
+
+    }
   
     if((point.y+point.size)>=(ctx.canvas.height+offset)){
     //    point.y=0;
@@ -90,6 +154,22 @@ function applyWave(point){
     }
 }
 
+function particleCollisionDetection(){
+   for(let i=0;i<points.length;i++){
+     const a=points[i];
+    for(let j=i+1;j<points.length;j++){
+     const b=points[j];
+        if(a.contains(b)){
+            const angle=Math.atan2(a.y-b.y,a.x-b.x);
+            a.x+=a.x-b.x;
+            a.y+=a.y-b.y;
+            a.angle=-angle;
+            break;
+        }
+    }
+   }
+}
+
 var canvas=null;
 var ctx=null;
 var points=[];
@@ -97,17 +177,26 @@ var lineTree=null;
 var n_time=0;
 var o_time;
 var tick=0;
-var pointer2D= Object.create(Line2D)
+var MODE;
+var enableBallCollision=true;
+var EVENT=[false,false,false];
+const pointer2D= Object.create(Line2D);
+const pointerDown2D=Object.create(Line2D);
+const pointerUp2D=Object.create(Line2D);
 const maxParticles=500;
 window.onload=()=>{
    canvas= document.getElementById("canvas");
    ctx=canvas.getContext("2d");
    ctx.canvas.width  = window.innerWidth;
    ctx.canvas.height = window.innerHeight;
-   
+   MODE=3;
   initParticleList();
   pointer2D.start=Object.create(Point2D);
   pointer2D.end=Object.create(Point2D);
+  pointerDown2D.start=Object.create(Point2D);
+  pointerDown2D.end=Object.create(Point2D);
+  pointerUp2D.start=Object.create(Point2D);
+  pointerUp2D.end=Object.create(Point2D);
 }
 
 window.addEventListener("resize",()=>{
@@ -116,11 +205,22 @@ window.addEventListener("resize",()=>{
 },false)
 
 window.addEventListener("mousemove",(event)=>{
-     console.log("X: "+event.x+" Y: "+event.y);
      pointer2D.start.x=event.x;
      pointer2D.start.y=event.y;
+     EVENT[0]=true;
 });
 
+window.addEventListener("mousedown", (event)=>{
+    pointerDown2D.start.x=event.x;
+    pointerDown2D.start.y=event.y;
+    EVENT[1]=true;
+});
+window.addEventListener("mouseup", (event)=>{
+  
+    pointerUp2D.start.x=event.x;
+    pointerUp2D.start.y=event.y;
+    EVENT[2]=true;
+});
 function initParticleList(){
     
     points.splice(0,points.length)
@@ -150,7 +250,7 @@ function update(){
 
     //draw lineTree
     lineTree.lines.forEach(line=>{
-    if(line.distance()<=(line.max)){
+    if(line.distance()<=(line.max)&&line.distance()>=(line.max*0.2)){
         ctx.strokeStyle=`rgba(128, 128, 128, ${line.alpha()})`    
         ctx.beginPath()
         ctx.moveTo(line.start.x, line.start.y)
@@ -164,6 +264,16 @@ function update(){
      }
        
     })
+
+     //Draw the mouseFlig line this will occur when mouse pointer down and mouse move is activated
+     if(EVENT[0]&&EVENT[1]){
+        ctx.strokeStyle="red"; 
+        ctx.beginPath();
+        ctx.moveTo(pointerDown2D.start.x, pointerDown2D.start.y)
+        ctx.lineTo(pointer2D.start.x, pointer2D.start.y)
+        ctx.closePath();
+        ctx.stroke();
+      }
    
     // Draw the point
     points.forEach(point=>{
@@ -174,6 +284,8 @@ function update(){
         ctx.fill();
       
     })
+
+   
 
     // reset the point collision flag to false
      points.forEach(point=>{
@@ -188,8 +300,23 @@ function update(){
     })
    
     updateFps();
-    pointer2D.start.x=Number.POSITIVE_INFINITY;
-    pointer2D.start.y=Number.POSITIVE_INFINITY;
+
+    if(enableBallCollision)
+    particleCollisionDetection();
+
+    // we have to reset the move mouse pointer for the fling mode
+    if(MODE!=3){
+       pointer2D.start.x=Number.POSITIVE_INFINITY;
+       pointer2D.start.y=Number.POSITIVE_INFINITY;
+    }
+
+     // reset the mouse pointer down and mouse poiner up values 
+     if(EVENT[2]){
+        pointerDown2D.start.x=Number.POSITIVE_INFINITY;
+        pointerDown2D.start.y=Number.POSITIVE_INFINITY;
+        EVENT[2]=false;
+    }
+
     }
     requestAnimationFrame(update);
 }
