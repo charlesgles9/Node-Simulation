@@ -19,7 +19,9 @@ var Line2D={
         // Applying the Pythagorean theorem to calculate the distance
         return Math.sqrt(Math.pow(deltaX, 2) + Math.pow(deltaY, 2));
      },
-
+     getAngle(){
+        return Math.atan2(this.start.y-this.end.y,this.end.x-this.start.x);
+       },
      alpha(){
         return this.max/this.distance()-1;
      }
@@ -41,17 +43,33 @@ var LineTree={
         }
      }
     },
+
+   
     clear(){
         this.lines.splice(0,this.lines.length);
     }
 }
 
+function mouseRepelAnimation(point){
+     if(pointer2D.distance()<=pointer2D.max){
+        point.angle=-pointer2D.getAngle();
+        movePoint(point,Math.abs(pointer2D.distance()-pointer2D.max))
+     } else
+        movePoint(point,0);
+}
+
+function movePoint(point,offset){
+    point.x += (point.speed+offset) * Math.cos(point.angle);
+    point.y += (point.speed+offset) * Math.sin(point.angle);
+}
+
 function applyWave(point){
     
     let offset=point.size*4;
-    point.x += point.speed * Math.cos(point.angle);
-    point.y += point.speed * Math.sin(point.angle);
-
+    pointer2D.end.x=point.x;
+    pointer2D.end.y=point.y;
+    mouseRepelAnimation(point);
+  
     if((point.y+point.size)>=(ctx.canvas.height+offset)){
     //    point.y=0;
         point.angle=-Math.random()*Math.PI;
@@ -79,6 +97,7 @@ var lineTree=null;
 var n_time=0;
 var o_time;
 var tick=0;
+var pointer2D= Object.create(Line2D)
 const maxParticles=500;
 window.onload=()=>{
    canvas= document.getElementById("canvas");
@@ -87,7 +106,8 @@ window.onload=()=>{
    ctx.canvas.height = window.innerHeight;
    
   initParticleList();
-   
+  pointer2D.start=Object.create(Point2D);
+  pointer2D.end=Object.create(Point2D);
 }
 
 window.addEventListener("resize",()=>{
@@ -95,11 +115,16 @@ window.addEventListener("resize",()=>{
     ctx.canvas.height = window.innerHeight;
 },false)
 
+window.addEventListener("mousemove",(event)=>{
+     console.log("X: "+event.x+" Y: "+event.y);
+     pointer2D.start.x=event.x;
+     pointer2D.start.y=event.y;
+});
+
 function initParticleList(){
     
-        points.splice(0,points.length)
+    points.splice(0,points.length)
     const size=maxParticles*(parseFloat(document.getElementById("p1").value)/100.0);
-     
     for(let i=0;i<size;i++){
         const point=Object.create(Point2D);
         point.x=Math.random()* ctx.canvas.width;
@@ -163,6 +188,8 @@ function update(){
     })
    
     updateFps();
+    pointer2D.start.x=Number.POSITIVE_INFINITY;
+    pointer2D.start.y=Number.POSITIVE_INFINITY;
     }
     requestAnimationFrame(update);
 }
