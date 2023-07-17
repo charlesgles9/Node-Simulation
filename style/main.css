@@ -63,7 +63,40 @@ input[type="checkbox"]:checked:after {
   top: 2px;
   left: 6px;
 }
+/*radio*/
+input[type="radio"] {
+  position: relative;
+  cursor: pointer;
+}
 
+input[type="radio"]:before {
+  content: "";
+  display: block;
+  position: absolute;
+  width: 16px;
+  height: 16px;
+  top: 0;
+  left: 0;
+  border: 2px solid var(--lightBlue);
+  border-radius: 10%;
+  background-color: white;
+}
+
+input[type="radio"]:checked:after {
+  content: "";
+  display: block;
+  width: 5px;
+  height: 10px;
+  border: solid red;
+  border-width: 0 2px 2px 0;
+  border-radius: 10%;
+  -webkit-transform: rotate(45deg);
+  -ms-transform: rotate(45deg);
+  transform: rotate(45deg);
+  position: absolute;
+  top: 2px;
+  left: 6px;
+}
 canvas {
   height: max-content;
   width: 100%;
@@ -93,8 +126,14 @@ canvas {
   color: white;
 }
 
+.padding-0 {
+  padding: 0px;
+}
 .padding-1 {
   padding: 10px;
+}
+.margin-0 {
+  margin: 0px;
 }
 .margin-1 {
   margin: 10px;
