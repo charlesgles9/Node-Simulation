@@ -38,7 +38,7 @@ var Line2D={
 
 var LineTree={
     lines:[],
-    createTree(points){
+    createTree(points,maxLength){
      for(let i=0;i<points.length;i++){
         for(let j=0;j<points.length;j++){
             if(i==j) continue;
@@ -47,6 +47,7 @@ var LineTree={
             const line=Object.create(Line2D);
             line.start=a;
             line.end=b;
+            line.max=maxLength;
             this.lines.push(line);
         }
      }
@@ -59,7 +60,7 @@ var LineTree={
 }
 
 function mouseRepelAnimation(point){
-    const mouseRadius=1.0
+    const mouseRadius=0.6;
      if(pointer2D.distance()<=pointer2D.max*mouseRadius){
         point.angle=-pointer2D.getAngle();
         movePoint(point,Math.min(Math.abs(pointer2D.distance()-pointer2D.max),10));
@@ -91,12 +92,7 @@ function mouseFlingPoint(point){
            
          if(EVENT[2]){
             point.angle=-pointerUp2D.getAngle();
-
             point.acc=10*Math.min(pointerUp2D.distance(),elasticity)/elasticity;
-          // point.x=pointer2D.start.x-point.size*0.5;
-          // point.y=pointer2D.start.y-point.size*0.5;
-        //   pointerDown2D.start.x=pointer2D.start.x;
-          // pointerDown2D.start.y=pointer2D.start.y;
          }
      }else{
         movePoint(point,0);
@@ -178,21 +174,23 @@ var n_time=0;
 var o_time;
 var tick=0;
 var MODE;
-var enableBallCollision=true;
+var enableBallCollision=false;
 var EVENT=[false,false,false];
+var maxLineLength=200;
 const pointer2D= Object.create(Line2D);
 const pointerDown2D=Object.create(Line2D);
 const pointerUp2D=Object.create(Line2D);
-const maxParticles=500;
+const maxParticles=300;
 window.onload=()=>{
    canvas= document.getElementById("canvas");
    ctx=canvas.getContext("2d");
    ctx.canvas.width  = window.innerWidth;
    ctx.canvas.height = window.innerHeight;
-   MODE=3;
+   MODE=0;
   initParticleList();
   pointer2D.start=Object.create(Point2D);
   pointer2D.end=Object.create(Point2D);
+  pointer2D.start.size=5;
   pointerDown2D.start=Object.create(Point2D);
   pointerDown2D.end=Object.create(Point2D);
   pointerUp2D.start=Object.create(Point2D);
@@ -215,12 +213,14 @@ window.addEventListener("mousedown", (event)=>{
     pointerDown2D.start.y=event.y;
     EVENT[1]=true;
 });
+
 window.addEventListener("mouseup", (event)=>{
   
     pointerUp2D.start.x=event.x;
     pointerUp2D.start.y=event.y;
     EVENT[2]=true;
 });
+
 function initParticleList(){
     
     points.splice(0,points.length)
@@ -238,7 +238,9 @@ function initParticleList(){
       lineTree= Object.create(LineTree);
        else
        lineTree.clear();
-      lineTree.createTree(points);
+      const maxLength=maxLineLength*parseFloat(document.getElementById("p2").value)/100;
+       console.log(maxLength);
+      lineTree.createTree(points,maxLength);
 
 }
 
@@ -264,7 +266,7 @@ function update(){
      }
        
     })
-
+    
      //Draw the mouseFlig line this will occur when mouse pointer down and mouse move is activated
      if(EVENT[0]&&EVENT[1]){
         ctx.strokeStyle="red"; 
@@ -284,6 +286,16 @@ function update(){
         ctx.fill();
       
     })
+
+
+    // draw the mouse pointer down if the mode if mouse fling 
+    if(EVENT[0]){
+    ctx.fillStyle=`rgb(${Math.min(50+255*(pointer2D.start.alpha,255))},255,255)`;
+    ctx.beginPath();
+    ctx.arc(pointer2D.start.x, pointer2D.start.y, pointer2D.start.size*1.2, 0, 2 * Math.PI);
+    ctx.closePath();
+    ctx.fill();
+    }
 
    
 

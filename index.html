@@ -10,14 +10,20 @@
 
     <div class="container" style="position: relative;">
         <canvas id="canvas"></canvas>
-      <div class="container" style="position: absolute; right: 0px; top: 0px;">
+      <div class="container " style="position: absolute; top: 0px;">
+      <div class="container card margin-1 padding-1" style="width: 400px;">
         <h3 id="fps" style="color:white">FPS: 0</h3>
-        <div class="container d-flex white card" style="width: 300px;">
-            <h5>Particle Size</h5><input id="p1" type="range" class="slider" 
-            style="width: 180px; height: 10px;" min="10" max="100" value="10" onchange="initParticleList()"></div>
+        <div class="container d-flex white border-bottom margin-1" >
+            <h5 style="width: 100px;">Particles</h5>
+            <input id="p1" type="range" class="slider" 
+            style="width: 180px; height: 5px;" min="10" max="100" value="30" onchange="initParticleList()"></div>
+            <div class="container d-flex white margin-1" >
+              <h5 style="width: 100px;" >LineLength</h5>
+              <input id="p2" type="range" class="slider" 
+              style="width: 180px; height: 5px;" min="10" max="100" value="100" onchange="initParticleList()" ></div>
       </div>  
     </div>
-
+  </div>
 
 </body>
 </html>
