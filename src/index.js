@@ -71,7 +71,10 @@ function mouseRepelAnimation(point) {
 }
 
 function mouseAttractAnimation(point) {
-  if (pointer2D.distance() <= pointer2D.max) {
+  if (
+    pointer2D.distance() <= pointer2D.max &&
+    pointer2D.distance() >= pointer2D.max * 0.5
+  ) {
     point.angle = -pointer2D.getAngle();
     movePoint(
       point,
@@ -178,6 +181,7 @@ const pointer2D = Object.create(Line2D);
 const pointerDown2D = Object.create(Line2D);
 const pointerUp2D = Object.create(Line2D);
 const maxParticles = 300;
+
 window.onload = () => {
   canvas = document.getElementById("canvas");
   ctx = canvas.getContext("2d");
@@ -313,6 +317,17 @@ function update() {
     points.forEach((point) => {
       applyWave(point);
     });
+
+    const modeList = document.getElementsByName("mode");
+    if (modeList[0].checked) {
+      MODE = 0;
+    } else if (modeList[1].checked) {
+      MODE = 1;
+    } else if (modeList[2].checked) {
+      MODE = 2;
+    } else if (modeList[3].checked) {
+      MODE = 3;
+    }
 
     updateFps();
 

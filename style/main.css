@@ -77,7 +77,9 @@ canvas {
   margin: 0 auto;
   padding: 0 auto;
 }
-
+.disable-user-select {
+  user-select: none;
+}
 .d-flex {
   display: flex;
   flex-direction: row;

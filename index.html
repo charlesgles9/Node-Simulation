@@ -7,7 +7,7 @@
     <script src="src/index.js"></script>
   </head>
   <body>
-    <div class="container" style="position: relative">
+    <div class="container disable-user-select " style="position: relative">
       <canvas id="canvas"></canvas>
       <div class="container" style="position: absolute; top: 0px">
         <div class="container card margin-1 padding-1" style="width: 400px">
@@ -38,16 +38,40 @@
               onchange="initParticleList()"
             />
           </div>
-          <div class="container d-flex margin-1 white">
+          <div class="container d-flex margin-1 border-bottom  white">
            
               <h5 style="width: 100px; align-self: self-start;" >
                 Enable collision
               </h5>
                <input type="checkbox" id="p3" onclick="toggleBallCollision()"/>
-            
-          
+      
               </div>
-           
+           <div class="container">
+              <div class="container d-flex margin-1 border-bottom  white">
+              <h5 style="width: 100px; align-self: self-start;"  >
+                Repel
+              </h5>
+               <input type="radio" name="mode" checked="true" />
+              </div>
+               <div class="container d-flex margin-1 border-bottom  white">
+              <h5 style="width: 100px; align-self: self-start;"  >
+                Attract
+              </h5>
+               <input type="radio" name="mode" />
+              </div>
+               <div class="container d-flex margin-1 border-bottom  white">
+              <h5 style="width: 100px; align-self: self-start;"  >
+                Gather
+              </h5>
+               <input type="radio" name="mode" />
+              </div>
+               <div class="container d-flex margin-1 border-bottom  white">
+              <h5 style="width: 100px; align-self: self-start;"  >
+                Fling
+              </h5>
+               <input type="radio" name="mode" />
+              </div>
+           </div>
           </div>
         </div>
       </div>
