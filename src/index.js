@@ -157,9 +157,12 @@ function particleCollisionDetection(){
      const b=points[j];
         if(a.contains(b)){
             const angle=Math.atan2(a.y-b.y,a.x-b.x);
-            a.x+=a.x-b.x;
-            a.y+=a.y-b.y;
+            a.x+=(a.x-b.x)*0.5;
+            a.y+=(a.y-b.y)*0.5;
+            b.x+=(b.x-a.x)*0.5;
+            b.y+=(b.y-a.y)*0.5;
             a.angle=-angle;
+            b.angle=Math.atan2(b.y-a.y,b.x-a.x);
             break;
         }
     }
@@ -174,7 +177,7 @@ var n_time=0;
 var o_time;
 var tick=0;
 var MODE;
-var enableBallCollision=false;
+var enableBallCollision=true;
 var EVENT=[false,false,false];
 var maxLineLength=200;
 const pointer2D= Object.create(Line2D);
